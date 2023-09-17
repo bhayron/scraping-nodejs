@@ -9,8 +9,8 @@ const URL = 'https://www.imdb.com/title/tt0102926/?ref_=nv_sr_1';
 
     let $ = cheerio.load(response);
     
-    let title = $('div[class="title_wrapper"] > h1').text();
+    let title = $('div[class="sc-dffc6c81-0"] > h1 > span').text();
     let rating = $('span[itemprop="ratingValue"]').text();
 
-    console.log(title, rating);
+    console.log("dadis",title, rating);
 })()
