@@ -10,7 +10,7 @@ const URL = 'https://www.imdb.com/title/tt0102926/?ref_=nv_sr_1';
     let $ = cheerio.load(response);
 
     let title = $('div[class="sc-dffc6c81-0 iwmAVw"] > h1').text();
-    let rating = $('span[itemprop="ratingValue"]').text();
+    let rating = $('span[class="sc-bde20123-1 iZlgcd"]').text();
 
     console.log("dadis", title, rating);
 })()
