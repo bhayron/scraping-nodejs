@@ -21,7 +21,8 @@ const URL = 'https://www.imdb.com/title/tt0102926/?ref_=nv_sr_1';
             'Sec-Fetch-User': '?1',
             'Upgrade-Insecure-Requests': '1',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36',
-        }
+        },
+        gzip:true
     });
 
     let $ = cheerio.load(response);
