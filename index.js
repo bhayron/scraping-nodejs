@@ -35,6 +35,13 @@ const URL = 'https://www.imdb.com/title/tt0102926/?ref_=nv_sr_1';
 
     const rating2 = secondSpan.text();
 
+    let poster = $('div[class="ipc-lockup-overlay__screen"] > a > img').attr('src')
+
+    let genres = []
+    $('div[class="totçe_wrapper"] a[href^="/genre/"]').each((i,elm)=>{
+        let genre = $(elm).text()
+        genres.push(genre)
+    })
 
     console.log("Title", title);
     console.log("Rating", rating1 + rating2);
