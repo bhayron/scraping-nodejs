@@ -1,6 +1,6 @@
 const request = require('request-promise');
 const cheerio = require('cheerio');
-
+const fs = require('fs');
 
 
 
@@ -10,6 +10,7 @@ const cheerio = require('cheerio');
         'https://www.imdb.com/title/tt0102926/?ref_=nv_sr_1'
     ]
 
+    let muvieData =[]
     for (let movie of URLS) {
         const response = await request({
             uri: movie,
@@ -49,7 +50,12 @@ const cheerio = require('cheerio');
             genres.push(genre)
         })
 
-        console.log("Title", title);
-        console.log("Rating", rating1 + rating2);
+        muvieData.push({
+            title,
+            rating1
+        })       
     }
+
+    fs.writeFileSync('./data.json',JSON.stringify(muvieData),'utf-8')
+    console.log( muvieData);
 })()
