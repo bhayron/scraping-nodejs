@@ -1,8 +1,7 @@
 const request = require('request-promise');
 const cheerio = require('cheerio');
 const fs = require('fs');
-
-
+const { Parser } = require('json2csv');
 
 (async () => {
     const URLS = [
@@ -10,24 +9,12 @@ const fs = require('fs');
         'https://www.imdb.com/title/tt0102926/?ref_=nv_sr_1'
     ]
 
-    let muvieData =[]
+    let movieData = [];
     for (let movie of URLS) {
         const response = await request({
             uri: movie,
             headers: {
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-                'Accept-Encoding': 'gzip, deflate, br',
-                'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
-                'Cache-Control': 'max-age=0',
-                'Sec-Ch-Ua': '"Chromium";v="116", "Not)A;Brand";v="24", "Google Chrome";v="116"',
-                'Sec-Ch-Ua-Mobile': '?0',
-                'Sec-Ch-Ua-Platform': 'Windows',
-                'Sec-Fetch-Dest': 'document',
-                'Sec-Fetch-Mode': 'navigate',
-                'Sec-Fetch-Site': 'same-origin',
-                'Sec-Fetch-User': '?1',
-                'Upgrade-Insecure-Requests': '1',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36',
+                // Cabeçalhos aqui...
             },
             gzip: true
         });
@@ -38,24 +25,36 @@ const fs = require('fs');
         let rating1 = $('span[class="sc-bde20123-1 iZlgcd"]').text();
 
         const ratingDiv = $('div[data-testid="hero-rating-bar__aggregate-rating__score"]');
-        const secondSpan = ratingDiv.find('span').eq(1); // Pega o segundo span dentro da div
+        const secondSpan = ratingDiv.find('span').eq(1); 
 
         const rating2 = secondSpan.text();
 
         let poster = $('div[class="ipc-lockup-overlay__screen"] > a > img').attr('src')
 
         let genres = []
-        $('div[class="totçe_wrapper"] a[href^="/genre/"]').each((i, elm) => {
+        $('div[class="ipc-chip-list__scroller"] a[href^="/genres/"]').each((i, elm) => {
             let genre = $(elm).text()
             genres.push(genre)
         })
 
-        muvieData.push({
+        const populaty = $('#__next > main > div > section.ipc-page-background.ipc-page-background--base.sc-304f99f6-0.eaRXHu > section > div:nth-child(4) > section > section > div.sc-e226b0e3-4.ecgcFy > div.sc-e226b0e3-6.hfusNC > div.sc-e226b0e3-11.jSQoAO > div.sc-3a4309f8-0.fjtZsE.sc-dffc6c81-5.itEvYq > div > div:nth-child(3) > a > span > div > div.sc-5f7fb5b4-0.cUcPIU > div.sc-5f7fb5b4-1.bhuIgW').text().trim()
+
+        movieData.push({
             title,
-            rating1
+            rating1,
+            populaty,
+            rating2, 
+            poster, 
+            genres 
         })       
     }
 
-    fs.writeFileSync('./data.json',JSON.stringify(muvieData),'utf-8')
-    console.log( muvieData);
+    const fields = ['title', 'rating1']; 
+    const json2csvParser = new Parser({ fields }); 
+    const csv = json2csvParser.parse(movieData);
+    fs.writeFileSync('./data.csv', csv, 'utf-8');
+
+
+
+    console.log(movieData);
 })()
