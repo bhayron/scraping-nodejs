@@ -1,20 +1,42 @@
-const request = require('request-promise');
+const requestPromisse = require('request-promise');
 const cheerio = require('cheerio');
 const fs = require('fs');
 const { Parser } = require('json2csv');
 
+const request = require('request');
+
 (async () => {
     const URLS = [
-        'https://www.imdb.com/title/tt0102926/?ref_=nv_sr_1',
-        'https://www.imdb.com/title/tt0102926/?ref_=nv_sr_1'
+
+        {
+            url: 'https://www.imdb.com/title/tt0102926/?ref_=nv_sr_1',
+            id: 'the_silence_of_inocents'
+        },
+        // {
+        //     url: 'https://www.imdb.com/title/tt0102926/?ref_=nv_sr_1',
+        //     id: 'gone_girl'
+        // }
     ]
 
     let movieData = [];
     for (let movie of URLS) {
-        const response = await request({
-            uri: movie,
+        const response = await requestPromisse({
+            uri: movie.url,
             headers: {
-                // Cabeçalhos aqui...
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+                'Cache-Control': 'max-age=0',
+                'Sec-Ch-Ua': '"Chromium";v="116", "Not)A;Brand";v="24", "Google Chrome";v="116"',
+                'Sec-Ch-Ua-Mobile': '?0',
+                'Sec-Ch-Ua-Platform': 'Windows',
+                'Sec-Fetch-Dest': 'document',
+                'Sec-Fetch-Mode': 'navigate',
+                'Sec-Fetch-Site': 'same-origin',
+                'Sec-Fetch-User': '?1',
+                'Upgrade-Insecure-Requests': '1',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36',
+
             },
             gzip: true
         });
@@ -25,11 +47,12 @@ const { Parser } = require('json2csv');
         let rating1 = $('span[class="sc-bde20123-1 iZlgcd"]').text();
 
         const ratingDiv = $('div[data-testid="hero-rating-bar__aggregate-rating__score"]');
-        const secondSpan = ratingDiv.find('span').eq(1); 
+        const secondSpan = ratingDiv.find('span').eq(1);
 
         const rating2 = secondSpan.text();
+        let poster = 'https://agenciamoll.com.br/wp-content/uploads/2019/12/O-que-%C3%A9-URL-e-como-ela-Ajuda-na-sua-Estrat%C3%A9gia-Digital.jpg'
 
-        let poster = $('div[class="ipc-lockup-overlay__screen"] > a > img').attr('src')
+        // let poster = $('div[class="ipc-lockup-overlay__screen"] > a > img').attr('src')
 
         let genres = []
         $('div[class="ipc-chip-list__scroller"] a[href^="/genres/"]').each((i, elm) => {
@@ -43,16 +66,50 @@ const { Parser } = require('json2csv');
             title,
             rating1,
             populaty,
-            rating2, 
-            poster, 
-            genres 
-        })       
+            rating2,
+            poster,
+            genres
+        })
+        let file = fs.createWriteStream(`${movie.id}.jpg`)
+        await new Promise((resolve, reject) => {
+
+
+            let stream = request({
+                uri: movie.poster,
+                headers: {
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+                    'Cache-Control': 'max-age=0',
+                    'Sec-Ch-Ua': '"Chromium";v="116", "Not)A;Brand";v="24", "Google Chrome";v="116"',
+                    'Sec-Ch-Ua-Mobile': '?0',
+                    'Sec-Ch-Ua-Platform': 'Windows',
+                    'Sec-Fetch-Dest': 'document',
+                    'Sec-Fetch-Mode': 'navigate',
+                    'Sec-Fetch-Site': 'same-origin',
+                    'Sec-Fetch-User': '?1',
+                    'Upgrade-Insecure-Requests': '1',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36',
+
+                },
+                gzip: true
+            }).pipe(file)
+                .on('finish', () => {
+                    console.log('Finished downloading the image');
+                    resolve()
+                })
+                .on('error',(error)=>{
+                    reject(error)
+                })
+        }).catch(error=>{
+            console.log('Erro', error);
+        })
     }
 
-    const fields = ['title', 'rating1']; 
-    const json2csvParser = new Parser({ fields }); 
-    const csv = json2csvParser.parse(movieData);
-    fs.writeFileSync('./data.csv', csv, 'utf-8');
+    // const fields = ['title', 'rating1'];
+    // const json2csvParser = new Parser({ fields });
+    // const csv = json2csvParser.parse(movieData);
+    // fs.writeFileSync('./data.csv', csv, 'utf-8');
 
 
 
